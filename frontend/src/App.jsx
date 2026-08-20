@@ -5,7 +5,7 @@ import FaultInjector from './components/FaultInjector';
 import TelemetryChart from './components/TelemetryChart';
 import WorkOrderCenter from './components/WorkOrderCenter';
 import ChatAssistant from './components/ChatAssistant';
-import { LayoutDashboard, FileText, MessageSquare, AlertCircle } from 'lucide-react';
+import { LayoutDashboard, FileText, MessageSquare } from 'lucide-react';
 
 export default function App() {
   const [activeTab, setActiveTab] = useState('dashboard');
@@ -14,23 +14,25 @@ export default function App() {
   const [fleetSummary, setFleetSummary] = useState({});
   const [machines, setMachines] = useState([]);
   const [workOrders, setWorkOrders] = useState([]);
-  const [selectedMachineId, setSelectedMachineId] = useState('PUMP-101');
+  const [selectedMachineId, setSelectedMachineId] = useState('CNC-MILL-01');
   const [machineHistory, setMachineHistory] = useState([]);
   const [isInjecting, setIsInjecting] = useState(false);
   const [isResetting, setIsResetting] = useState(false);
   const [isChatting, setIsChatting] = useState(false);
 
-  // Base API URL (proxied by Vite or direct)
   const API_BASE = '';
 
-  // Initial Data Fetching
   const fetchFleetData = async () => {
     try {
       const res = await fetch(`${API_BASE}/api/fleet`);
       if (res.ok) {
         const data = await res.json();
         setFleetSummary(data.summary || {});
-        setMachines(data.machines || []);
+        const machineList = data.machines || [];
+        setMachines(machineList);
+        if (machineList.length > 0 && !machineList.some(m => m.machine_id === selectedMachineId)) {
+          setSelectedMachineId(machineList[0].machine_id);
+        }
         setApiStatus('online');
       } else {
         setApiStatus('offline');
@@ -89,7 +91,6 @@ export default function App() {
     }
   }, [selectedMachineId]);
 
-  // Actions
   const handleInjectTelemetry = async (payload) => {
     setIsInjecting(true);
     try {
@@ -153,19 +154,15 @@ export default function App() {
   };
 
   return (
-    <div className="min-h-screen p-4 md:p-6 max-w-[1500px] mx-auto">
+    <div className="app-container">
       {/* Top Header */}
       <Header apiStatus={apiStatus} onReset={handleResetSimulation} isResetting={isResetting} />
 
-      {/* Main Tab Navigation */}
-      <div className="flex items-center gap-2 mb-6 border-b border-slate-800 pb-3">
+      {/* Main Tab Navigation Bar */}
+      <nav className="tab-nav">
         <button
           onClick={() => setActiveTab('dashboard')}
-          className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-semibold transition ${
-            activeTab === 'dashboard'
-              ? 'bg-blue-600 text-white shadow-lg shadow-blue-500/20'
-              : 'bg-slate-900 text-slate-400 hover:text-slate-200 border border-slate-800'
-          }`}
+          className={`tab-btn ${activeTab === 'dashboard' ? 'active' : ''}`}
         >
           <LayoutDashboard size={16} />
           Fleet Overview & Live Telemetry
@@ -173,16 +170,12 @@ export default function App() {
 
         <button
           onClick={() => setActiveTab('work-orders')}
-          className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-semibold transition relative ${
-            activeTab === 'work-orders'
-              ? 'bg-blue-600 text-white shadow-lg shadow-blue-500/20'
-              : 'bg-slate-900 text-slate-400 hover:text-slate-200 border border-slate-800'
-          }`}
+          className={`tab-btn ${activeTab === 'work-orders' ? 'active' : ''}`}
         >
           <FileText size={16} />
           Prescriptive Work Orders
           {workOrders.length > 0 && (
-            <span className="w-5 h-5 rounded-full bg-red-500 text-white text-[10px] flex items-center justify-center font-mono">
+            <span style={{ padding: '2px 6px', borderRadius: '10px', background: '#ef4444', color: 'white', fontSize: '0.65rem', fontFamily: 'monospace' }}>
               {workOrders.length}
             </span>
           )}
@@ -190,20 +183,16 @@ export default function App() {
 
         <button
           onClick={() => setActiveTab('chat')}
-          className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-semibold transition ${
-            activeTab === 'chat'
-              ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-500/20'
-              : 'bg-slate-900 text-slate-400 hover:text-slate-200 border border-slate-800'
-          }`}
+          className={`tab-btn ${activeTab === 'chat' ? 'active' : ''}`}
         >
           <MessageSquare size={16} />
           AI Maintenance Assistant
         </button>
-      </div>
+      </nav>
 
-      {/* Main View Area */}
+      {/* Content Area */}
       {activeTab === 'dashboard' && (
-        <div className="space-y-6">
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
           <FleetOverview
             summary={fleetSummary}
             machines={machines}
@@ -211,8 +200,8 @@ export default function App() {
             onSelectMachine={(mId) => setSelectedMachineId(mId)}
           />
 
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            <div className="lg:col-span-1">
+          <div className="grid-main">
+            <div>
               <FaultInjector
                 config={config}
                 selectedMachineId={selectedMachineId}
@@ -221,7 +210,7 @@ export default function App() {
               />
             </div>
 
-            <div className="lg:col-span-2">
+            <div>
               <TelemetryChart machineId={selectedMachineId} history={machineHistory} />
             </div>
           </div>

@@ -7,7 +7,6 @@ export default function FaultInjector({ config, selectedMachineId, onInject, isI
   const [severity, setSeverity] = useState(0.6);
   const [lastMessage, setLastMessage] = useState('');
 
-  // Keep state synced if parent changes selectedMachineId
   React.useEffect(() => {
     if (selectedMachineId) {
       setMachineId(selectedMachineId);
@@ -31,23 +30,19 @@ export default function FaultInjector({ config, selectedMachineId, onInject, isI
   const faults = config?.fault_modes || {};
 
   return (
-    <div className="glass-card p-5 space-y-4">
-      <div className="flex items-center gap-2 border-b border-slate-800 pb-3">
-        <Sliders className="text-amber-400" size={20} />
-        <div>
-          <h3 className="font-bold text-white text-base">Fault Injection Sandbox</h3>
-          <p className="text-xs text-slate-400">Simulate synthetic telemetry signals & trigger multi-agent analysis</p>
+    <div className="card" style={{ height: '100%', display: 'flex', flexDirection: 'column', justify: 'space-between' }}>
+      <div>
+        <div className="flex-gap-2" style={{ borderBottom: '1px solid #1e293b', paddingBottom: '0.75rem', marginBottom: '1rem' }}>
+          <Sliders style={{ color: '#fbbf24' }} size={20} />
+          <div>
+            <h3 style={{ fontSize: '1rem', fontWeight: '700', color: '#ffffff' }}>Fault Injection Sandbox</h3>
+            <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Simulate synthetic telemetry signals & trigger multi-agent analysis</p>
+          </div>
         </div>
-      </div>
 
-      <div className="space-y-3 text-xs">
-        <div>
-          <label className="block text-slate-300 font-medium mb-1">Target Machine</label>
-          <select
-            value={machineId}
-            onChange={(e) => setMachineId(e.target.value)}
-            className="w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-slate-200 focus:outline-none focus:border-blue-500"
-          >
+        <div className="form-group">
+          <label className="form-label">Target Machine</label>
+          <select value={machineId} onChange={(e) => setMachineId(e.target.value)} className="form-select">
             {Object.keys(profiles).map((mId) => (
               <option key={mId} value={mId}>
                 {mId} — {profiles[mId].type} ({profiles[mId].location})
@@ -56,13 +51,9 @@ export default function FaultInjector({ config, selectedMachineId, onInject, isI
           </select>
         </div>
 
-        <div>
-          <label className="block text-slate-300 font-medium mb-1">Fault Mode</label>
-          <select
-            value={faultMode}
-            onChange={(e) => setFaultMode(e.target.value)}
-            className="w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-slate-200 focus:outline-none focus:border-blue-500"
-          >
+        <div className="form-group">
+          <label className="form-label">Fault Mode</label>
+          <select value={faultMode} onChange={(e) => setFaultMode(e.target.value)} className="form-select">
             {Object.keys(faults).map((fKey) => (
               <option key={fKey} value={fKey}>
                 {fKey} ({faults[fKey]})
@@ -71,10 +62,12 @@ export default function FaultInjector({ config, selectedMachineId, onInject, isI
           </select>
         </div>
 
-        <div>
-          <div className="flex justify-between mb-1 font-medium">
-            <label className="text-slate-300">Degradation Severity</label>
-            <span className="font-mono text-amber-400">{faultMode === 'NORMAL' ? '0.0 (Baseline)' : severity.toFixed(1)}</span>
+        <div className="form-group" style={{ marginBottom: '1.25rem' }}>
+          <div className="flex-between" style={{ marginBottom: '0.4rem' }}>
+            <label className="form-label" style={{ margin: 0 }}>Degradation Severity</label>
+            <span style={{ fontSize: '0.75rem', fontFamily: 'monospace', color: '#fbbf24', fontWeight: '700' }}>
+              {faultMode === 'NORMAL' ? '0.0 (Baseline)' : severity.toFixed(1)}
+            </span>
           </div>
           <input
             type="range"
@@ -84,42 +77,31 @@ export default function FaultInjector({ config, selectedMachineId, onInject, isI
             disabled={faultMode === 'NORMAL'}
             value={severity}
             onChange={(e) => setSeverity(parseFloat(e.target.value))}
-            className="w-full h-2 bg-slate-800 rounded-lg appearance-none cursor-pointer accent-amber-500 disabled:opacity-30"
+            style={{ width: '100%', accentColor: '#f59e0b', cursor: 'pointer' }}
           />
-          <div className="flex justify-between text-[10px] text-slate-500 mt-1">
+          <div className="flex-between" style={{ fontSize: '0.65rem', color: 'var(--text-muted)', marginTop: '4px' }}>
             <span>0.0 (Healthy)</span>
             <span>0.5 (Moderate)</span>
             <span>1.0 (Critical)</span>
           </div>
         </div>
 
-        <div className="grid grid-cols-2 gap-2 pt-2">
-          <button
-            onClick={() => handleInject(1)}
-            disabled={isInjecting}
-            className="flex items-center justify-center gap-1.5 px-3 py-2.5 rounded-lg bg-blue-600 hover:bg-blue-500 text-white font-medium text-xs transition disabled:opacity-50"
-          >
-            <Zap size={14} />
-            Inject 1 Step
+        <div className="grid-2" style={{ gap: '0.6rem' }}>
+          <button onClick={() => handleInject(1)} disabled={isInjecting} className="btn-primary">
+            <Zap size={14} /> Inject 1 Step
           </button>
-
-          <button
-            onClick={() => handleInject(5)}
-            disabled={isInjecting}
-            className="flex items-center justify-center gap-1.5 px-3 py-2.5 rounded-lg bg-amber-600 hover:bg-amber-500 text-white font-medium text-xs transition disabled:opacity-50"
-          >
-            <Play size={14} />
-            Stream 5 Steps
+          <button onClick={() => handleInject(5)} disabled={isInjecting} className="btn-amber">
+            <Play size={14} /> Stream 5 Steps
           </button>
         </div>
-
-        {lastMessage && (
-          <div className="p-2.5 rounded-lg bg-emerald-950/50 border border-emerald-800/40 text-emerald-400 flex items-center gap-2 mt-2">
-            <CheckCircle2 size={14} className="shrink-0" />
-            <span className="truncate">{lastMessage}</span>
-          </div>
-        )}
       </div>
+
+      {lastMessage && (
+        <div style={{ marginTop: '1rem', padding: '0.6rem', borderRadius: '8px', background: 'rgba(16, 185, 129, 0.15)', border: '1px solid rgba(52, 211, 153, 0.3)', color: '#34d399', fontSize: '0.75rem', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+          <CheckCircle2 size={14} style={{ shrink: 0 }} />
+          <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{lastMessage}</span>
+        </div>
+      )}
     </div>
   );
 }

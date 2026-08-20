@@ -3,83 +3,83 @@ import { Cpu, ShieldCheck, AlertTriangle, AlertOctagon, DollarSign, Activity, Wr
 
 export default function FleetOverview({ summary, machines, selectedMachineId, onSelectMachine }) {
   const getBadgeClass = (status) => {
-    if (status === 'Healthy') return 'badge-healthy';
-    if (status === 'Degraded / Warning') return 'badge-warning';
-    return 'badge-critical';
+    if (status === 'Healthy') return 'badge badge-healthy';
+    if (status === 'Degraded / Warning') return 'badge badge-warning';
+    return 'badge badge-critical';
   };
 
-  const getProgressColor = (health) => {
-    if (health >= 70) return 'bg-emerald-500';
-    if (health >= 40) return 'bg-amber-500';
-    return 'bg-red-500';
+  const getProgressClass = (health) => {
+    if (health >= 70) return 'progress-fill progress-healthy';
+    if (health >= 40) return 'progress-fill progress-warning';
+    return 'progress-fill progress-critical';
   };
 
   return (
-    <div className="space-y-6">
-      {/* Metric KPI Cards */}
-      <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
-        <div className="glass-card p-4 flex items-center gap-3">
-          <div className="p-3 rounded-xl bg-slate-800 text-blue-400">
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+      {/* 5-Column Grid KPI Cards */}
+      <div className="grid-5">
+        <div className="card flex-gap-3">
+          <div className="icon-box" style={{ background: '#1e293b', color: '#60a5fa' }}>
             <Cpu size={22} />
           </div>
           <div>
-            <div className="text-2xl font-bold text-white">{summary.total_machines || 0}</div>
-            <div className="text-xs text-slate-400 font-medium uppercase tracking-wider">Fleet Machines</div>
+            <div className="kpi-val">{summary.total_machines || 0}</div>
+            <div className="kpi-lbl">Fleet Machines</div>
           </div>
         </div>
 
-        <div className="glass-card p-4 flex items-center gap-3">
-          <div className="p-3 rounded-xl bg-emerald-950/60 text-emerald-400 border border-emerald-800/40">
+        <div className="card flex-gap-3">
+          <div className="icon-box" style={{ background: 'rgba(16, 185, 129, 0.15)', color: '#34d399', border: '1px solid rgba(52, 211, 153, 0.2)' }}>
             <ShieldCheck size={22} />
           </div>
           <div>
-            <div className="text-2xl font-bold text-emerald-400">{summary.healthy_count || 0}</div>
-            <div className="text-xs text-slate-400 font-medium uppercase tracking-wider">Healthy</div>
+            <div className="kpi-val" style={{ color: '#34d399' }}>{summary.healthy_count || 0}</div>
+            <div className="kpi-lbl">Healthy</div>
           </div>
         </div>
 
-        <div className="glass-card p-4 flex items-center gap-3">
-          <div className="p-3 rounded-xl bg-amber-950/60 text-amber-400 border border-amber-800/40">
+        <div className="card flex-gap-3">
+          <div className="icon-box" style={{ background: 'rgba(245, 158, 11, 0.15)', color: '#fbbf24', border: '1px solid rgba(251, 191, 36, 0.2)' }}>
             <AlertTriangle size={22} />
           </div>
           <div>
-            <div className="text-2xl font-bold text-amber-400">{summary.warning_count || 0}</div>
-            <div className="text-xs text-slate-400 font-medium uppercase tracking-wider">Warning</div>
+            <div className="kpi-val" style={{ color: '#fbbf24' }}>{summary.warning_count || 0}</div>
+            <div className="kpi-lbl">Warning</div>
           </div>
         </div>
 
-        <div className="glass-card p-4 flex items-center gap-3">
-          <div className="p-3 rounded-xl bg-red-950/60 text-red-400 border border-red-800/40">
+        <div className="card flex-gap-3">
+          <div className="icon-box" style={{ background: 'rgba(239, 68, 68, 0.15)', color: '#f87171', border: '1px solid rgba(248, 113, 113, 0.2)' }}>
             <AlertOctagon size={22} />
           </div>
           <div>
-            <div className="text-2xl font-bold text-red-400">{summary.critical_count || 0}</div>
-            <div className="text-xs text-slate-400 font-medium uppercase tracking-wider">Critical</div>
+            <div className="kpi-val" style={{ color: '#f87171' }}>{summary.critical_count || 0}</div>
+            <div className="kpi-lbl">Critical</div>
           </div>
         </div>
 
-        <div className="glass-card p-4 flex items-center gap-3">
-          <div className="p-3 rounded-xl bg-indigo-950/60 text-indigo-400 border border-indigo-800/40">
+        <div className="card flex-gap-3">
+          <div className="icon-box" style={{ background: 'rgba(99, 102, 241, 0.15)', color: '#a5b4fc', border: '1px solid rgba(165, 180, 252, 0.2)' }}>
             <DollarSign size={22} />
           </div>
           <div>
-            <div className="text-2xl font-bold text-indigo-400">${(summary.total_savings_usd || 0).toLocaleString()}</div>
-            <div className="text-xs text-slate-400 font-medium uppercase tracking-wider">Risk Savings</div>
+            <div className="kpi-val" style={{ color: '#a5b4fc' }}>${(summary.total_savings_usd || 0).toLocaleString()}</div>
+            <div className="kpi-lbl">Risk Savings</div>
           </div>
         </div>
       </div>
 
-      {/* Machine Fleet Cards Grid */}
+      {/* Machine Fleet Cards 3-Column Grid */}
       <div>
-        <div className="flex items-center justify-between mb-4">
-          <h2 className="text-lg font-semibold text-white flex items-center gap-2">
-            <Activity size={20} className="text-blue-400" />
+        <div className="flex-between" style={{ marginBottom: '1rem' }}>
+          <h2 style={{ fontSize: '1.1rem', fontWeight: '700', color: '#ffffff', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+            <Activity size={20} style={{ color: '#60a5fa' }} />
             Machine Fleet Health Matrix
           </h2>
-          <span className="text-xs text-slate-400">Click any card to select for deep telemetry telemetry analysis</span>
+          <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Click any machine card to analyze real-time telemetry</span>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div className="grid-3">
           {machines.map((m) => {
             const isSelected = m.machine_id === selectedMachineId;
 
@@ -87,62 +87,63 @@ export default function FleetOverview({ summary, machines, selectedMachineId, on
               <div
                 key={m.machine_id}
                 onClick={() => onSelectMachine(m.machine_id)}
-                className={`glass-card p-4 cursor-pointer transition-all border ${
-                  isSelected ? 'border-blue-500 ring-1 ring-blue-500 bg-slate-900/90' : 'border-slate-800 hover:border-slate-700'
-                }`}
+                className={`card ${isSelected ? 'card-selected' : ''}`}
+                style={{ cursor: 'pointer', transition: 'all 0.2s ease' }}
               >
-                <div className="flex items-start justify-between mb-3">
+                <div className="flex-between" style={{ marginBottom: '0.75rem' }}>
                   <div>
-                    <div className="flex items-center gap-2">
-                      <span className="font-bold text-white text-base">{m.machine_id}</span>
-                      <span className="text-xs text-slate-400 bg-slate-800 px-2 py-0.5 rounded">{m.type}</span>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                      <span style={{ fontSize: '1rem', fontWeight: '700', color: '#ffffff' }}>{m.machine_id}</span>
+                      <span style={{ fontSize: '0.7rem', padding: '2px 6px', borderRadius: '4px', background: '#1e293b', color: 'var(--text-muted)' }}>
+                        {m.type}
+                      </span>
                     </div>
-                    <div className="text-xs text-slate-400 mt-0.5">{m.location}</div>
+                    <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: '2px' }}>{m.location}</div>
                   </div>
-                  <span className={`text-xs px-2.5 py-1 rounded-full font-medium ${getBadgeClass(m.health_status)}`}>
+                  <span className={getBadgeClass(m.health_status)}>
                     {m.health_status}
                   </span>
                 </div>
 
                 {/* Health Index Bar */}
-                <div className="space-y-1.5 mb-4">
-                  <div className="flex justify-between text-xs font-medium">
-                    <span className="text-slate-400">Health Index</span>
-                    <span className="text-white font-mono">{m.health_index}%</span>
+                <div style={{ marginBottom: '1rem' }}>
+                  <div className="flex-between" style={{ fontSize: '0.75rem', fontWeight: '600', marginBottom: '4px' }}>
+                    <span style={{ color: 'var(--text-muted)' }}>Health Index</span>
+                    <span style={{ color: '#ffffff', fontFamily: 'monospace' }}>{m.health_index}%</span>
                   </div>
-                  <div className="w-full bg-slate-800 h-2 rounded-full overflow-hidden">
+                  <div className="progress-bg">
                     <div
-                      className={`h-full transition-all duration-500 ${getProgressColor(m.health_index)}`}
+                      className={getProgressClass(m.health_index)}
                       style={{ width: `${Math.max(5, m.health_index)}%` }}
                     />
                   </div>
                 </div>
 
                 {/* Details Grid */}
-                <div className="grid grid-cols-2 gap-2 text-xs bg-slate-950/60 p-2.5 rounded-lg border border-slate-800/80 mb-3">
+                <div className="grid-2" style={{ background: '#0f172a', padding: '0.6rem', borderRadius: '8px', border: '1px solid #1e293b', marginBottom: '0.75rem', fontSize: '0.75rem' }}>
                   <div>
-                    <div className="text-slate-400 flex items-center gap-1">
-                      <Clock size={12} className="text-blue-400" />
+                    <div style={{ color: 'var(--text-muted)', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                      <Clock size={12} style={{ color: '#60a5fa' }} />
                       Est. RUL
                     </div>
-                    <div className="font-mono text-slate-200 mt-0.5 font-semibold">{m.predicted_rul_hours} hrs</div>
+                    <div style={{ fontWeight: '700', color: '#f8fafc', marginTop: '2px', fontFamily: 'monospace' }}>
+                      {m.predicted_rul_hours} hrs
+                    </div>
                   </div>
                   <div>
-                    <div className="text-slate-400 flex items-center gap-1">
-                      <Wrench size={12} className="text-amber-400" />
+                    <div style={{ color: 'var(--text-muted)', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                      <Wrench size={12} style={{ color: '#fbbf24' }} />
                       Diagnosed Fault
                     </div>
-                    <div className="font-mono text-slate-200 mt-0.5 font-semibold truncate" title={m.diagnosed_fault}>
+                    <div style={{ fontWeight: '700', color: '#f8fafc', marginTop: '2px', fontFamily: 'monospace', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }} title={m.diagnosed_fault}>
                       {m.diagnosed_fault}
                     </div>
                   </div>
                 </div>
 
-                <div className="flex items-center justify-between text-xs text-slate-400 pt-2 border-t border-slate-800">
-                  <span className="truncate max-w-[200px]" title={m.recommendation}>{m.recommendation}</span>
-                  <span className="text-blue-400 font-medium hover:underline flex items-center gap-0.5">
-                    Inspect &rarr;
-                  </span>
+                <div className="flex-between" style={{ fontSize: '0.75rem', color: 'var(--text-muted)', paddingTop: '0.5rem', borderTop: '1px solid #1e293b' }}>
+                  <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: '200px' }} title={m.recommendation}>{m.recommendation}</span>
+                  <span style={{ color: '#60a5fa', fontWeight: '600' }}>Inspect &rarr;</span>
                 </div>
               </div>
             );

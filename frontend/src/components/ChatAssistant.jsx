@@ -40,46 +40,35 @@ export default function ChatAssistant({ onSendMessage, isChatting }) {
   ];
 
   return (
-    <div className="glass-card p-5 h-[620px] flex flex-col justify-between space-y-4">
-      {/* Header */}
-      <div className="flex items-center gap-2 border-b border-slate-800 pb-3">
-        <div className="p-2 rounded-lg bg-indigo-600/20 text-indigo-400 border border-indigo-500/30">
+    <div className="card chat-container">
+      <div className="flex-gap-2" style={{ borderBottom: '1px solid #1e293b', paddingBottom: '0.75rem', marginBottom: '0.75rem' }}>
+        <div className="icon-box" style={{ background: 'rgba(99, 102, 241, 0.2)', color: '#818cf8', border: '1px solid rgba(99, 102, 241, 0.3)' }}>
           <Bot size={20} />
         </div>
         <div>
-          <h3 className="font-bold text-white text-base flex items-center gap-2">
+          <h3 style={{ fontSize: '1rem', fontWeight: '700', color: '#ffffff', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
             Operational AI Maintenance Chatbot
-            <Sparkles size={16} className="text-indigo-400 animate-pulse" />
+            <Sparkles size={16} style={{ color: '#818cf8' }} />
           </h3>
-          <p className="text-xs text-slate-400">Natural language operational query engine over live fleet multi-agent state</p>
+          <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Natural language operational query engine over live fleet multi-agent state</p>
         </div>
       </div>
 
-      {/* Messages Feed */}
-      <div className="flex-1 overflow-y-auto space-y-3 pr-2 text-xs">
+      <div className="chat-feed">
         {messages.map((m, idx) => (
-          <div
-            key={idx}
-            className={`flex gap-3 ${m.role === 'user' ? 'justify-end' : 'justify-start'}`}
-          >
+          <div key={idx} style={{ display: 'flex', gap: '0.5rem', justifyContent: m.role === 'user' ? 'flex-end' : 'flex-start' }}>
             {m.role === 'assistant' && (
-              <div className="w-7 h-7 rounded-full bg-indigo-900/60 border border-indigo-700/50 flex items-center justify-center text-indigo-300 shrink-0 mt-0.5">
+              <div className="icon-box" style={{ width: '28px', height: '28px', borderRadius: '50%', background: '#1e1b4b', color: '#818cf8', flexShrink: 0 }}>
                 <Bot size={14} />
               </div>
             )}
 
-            <div
-              className={`max-w-[80%] p-3 rounded-xl whitespace-pre-wrap leading-relaxed ${
-                m.role === 'user'
-                  ? 'bg-blue-600 text-white rounded-br-none font-medium'
-                  : 'bg-slate-900 border border-slate-800 text-slate-200 rounded-bl-none'
-              }`}
-            >
+            <div className={`chat-msg ${m.role === 'user' ? 'chat-msg-user' : 'chat-msg-bot'}`}>
               {m.content}
             </div>
 
             {m.role === 'user' && (
-              <div className="w-7 h-7 rounded-full bg-blue-900/60 border border-blue-700/50 flex items-center justify-center text-blue-300 shrink-0 mt-0.5">
+              <div className="icon-box" style={{ width: '28px', height: '28px', borderRadius: '50%', background: '#1e3a8a', color: '#60a5fa', flexShrink: 0 }}>
                 <User size={14} />
               </div>
             )}
@@ -87,8 +76,8 @@ export default function ChatAssistant({ onSendMessage, isChatting }) {
         ))}
 
         {isChatting && (
-          <div className="flex items-center gap-2 text-indigo-400 text-xs p-2">
-            <Loader2 size={16} className="animate-spin" />
+          <div className="flex-gap-2" style={{ color: '#818cf8', fontSize: '0.75rem', padding: '0.4rem' }}>
+            <Loader2 size={16} style={{ animation: 'spin 1s linear infinite' }} />
             <span>AI Agent thinking...</span>
           </div>
         )}
@@ -96,39 +85,33 @@ export default function ChatAssistant({ onSendMessage, isChatting }) {
         <div ref={messagesEndRef} />
       </div>
 
-      {/* Recommended Quick Suggestions */}
-      <div className="flex flex-wrap gap-1.5 pt-2 border-t border-slate-800">
-        {sampleQueries.map((q, idx) => (
-          <button
-            key={idx}
-            onClick={() => {
-              setInput(q);
-            }}
-            className="text-[11px] px-2.5 py-1 rounded-full bg-slate-900 hover:bg-slate-800 text-slate-400 hover:text-slate-200 border border-slate-800 transition"
-          >
-            "{q}"
-          </button>
-        ))}
-      </div>
+      <div style={{ paddingTop: '0.75rem', borderTop: '1px solid #1e293b', marginTop: '0.5rem' }}>
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.4rem', marginBottom: '0.75rem' }}>
+          {sampleQueries.map((q, idx) => (
+            <button
+              key={idx}
+              onClick={() => setInput(q)}
+              style={{ fontSize: '0.7rem', padding: '4px 10px', borderRadius: '16px', background: '#0f172a', border: '1px solid #1e293b', color: 'var(--text-muted)', cursor: 'pointer' }}
+            >
+              "{q}"
+            </button>
+          ))}
+        </div>
 
-      {/* Input bar */}
-      <form onSubmit={handleSend} className="flex items-center gap-2 pt-1">
-        <input
-          type="text"
-          value={input}
-          onChange={(e) => setInput(e.target.value)}
-          placeholder="Ask a question about fleet health, RUL, or work orders..."
-          className="flex-1 bg-slate-900 border border-slate-700 rounded-xl px-4 py-2.5 text-xs text-slate-200 focus:outline-none focus:border-indigo-500 placeholder:text-slate-500"
-        />
-        <button
-          type="submit"
-          disabled={!input.trim() || isChatting}
-          className="px-4 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-medium text-xs transition flex items-center gap-1.5 disabled:opacity-50"
-        >
-          <Send size={14} />
-          Send
-        </button>
-      </form>
+        <form onSubmit={handleSend} style={{ display: 'flex', gap: '0.5rem' }}>
+          <input
+            type="text"
+            value={input}
+            onChange={(e) => setInput(e.target.value)}
+            placeholder="Ask a question about fleet health, RUL, or work orders..."
+            className="form-input"
+            style={{ flex: 1 }}
+          />
+          <button type="submit" disabled={!input.trim() || isChatting} className="btn-primary" style={{ background: '#4f46e5' }}>
+            <Send size={14} /> Send
+          </button>
+        </form>
+      </div>
     </div>
   );
 }
