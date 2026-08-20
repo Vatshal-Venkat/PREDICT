@@ -39,6 +39,7 @@ module.exports = {
       'process.env.VITE_API_BASE': JSON.stringify(process.env.VITE_API_BASE || ''),
       'process.env.VITE_API_URL': JSON.stringify(process.env.VITE_API_URL || ''),
       'process.env.REACT_APP_API_BASE': JSON.stringify(process.env.REACT_APP_API_BASE || ''),
+      'process.env.REACT_APP_API_URL': JSON.stringify(process.env.REACT_APP_API_URL || ''),
       'process.env.API_BASE': JSON.stringify(process.env.API_BASE || ''),
     }),
   ],

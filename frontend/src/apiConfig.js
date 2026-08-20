@@ -1,21 +1,17 @@
 /**
  * Central API & WebSocket configuration for Predictive Maintenance Frontend.
- * In production (Vercel), requests will automatically proxy via vercel.json rewrites or use VITE_API_BASE / REACT_APP_API_BASE environment variable.
  */
 
-const getApiBaseUrl = () => {
-  if (typeof process !== 'undefined' && process.env) {
-    if (process.env.VITE_API) return process.env.VITE_API.replace(/\/$/, '');
-    if (process.env.VITE_API_BASE) return process.env.VITE_API_BASE.replace(/\/$/, '');
-    if (process.env.VITE_API_URL) return process.env.VITE_API_URL.replace(/\/$/, '');
-    if (process.env.REACT_APP_API_BASE) return process.env.REACT_APP_API_BASE.replace(/\/$/, '');
-    if (process.env.REACT_APP_API_URL) return process.env.REACT_APP_API_URL.replace(/\/$/, '');
-    if (process.env.API_BASE) return process.env.API_BASE.replace(/\/$/, '');
-  }
-  return '';
-};
+const rawApiBase =
+  process.env.VITE_API ||
+  process.env.VITE_API_BASE ||
+  process.env.VITE_API_URL ||
+  process.env.REACT_APP_API_BASE ||
+  process.env.REACT_APP_API_URL ||
+  process.env.API_BASE ||
+  '';
 
-export const API_BASE = getApiBaseUrl();
+export const API_BASE = rawApiBase ? rawApiBase.replace(/\/$/, '') : '';
 
 export const getWsUrl = () => {
   if (API_BASE) {
