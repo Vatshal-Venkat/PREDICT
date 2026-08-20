@@ -36,10 +36,16 @@ class FleetOrchestrator:
                 "machine_id": m_id,
                 "machine_name": profile["name"],
                 "health_index": 100.0,
+                "health_status": "Healthy",
                 "health_category": "EXCELLENT",
-                "estimated_rul_hours": 250.0,
+                "predicted_rul_hours": 1000.0,
+                "estimated_rul_hours": 1000.0,
+                "diagnosed_fault": "NORMAL",
                 "fault_code": "NORMAL",
+                "active_fault": "NORMAL",
                 "anomaly_score": 0.0,
+                "confidence": 1.0,
+                "recommendation": "Nominal Operation",
                 "telemetry": profile["baseline"]
             }
 
@@ -59,18 +65,30 @@ class FleetOrchestrator:
         self.fleet_state[machine_id]["telemetry"] = telemetry_frame
         self.fleet_state[machine_id]["anomaly_score"] = anomaly_score
 
-        if is_anomaly:
+        if is_anomaly or telemetry_frame.get("fault_mode", "NORMAL") != "NORMAL":
             # 2. Diagnostic Agent classifies failure mode
             diag_output = self.diagnostic_agent.process(telemetry_output)
 
             # 3. Prognostic Agent estimates RUL & Health Index
             prog_output = self.prognostic_agent.process(diag_output)
 
-            # Update Fleet State with prognostic results
-            self.fleet_state[machine_id]["health_index"] = prog_output["health_index"]
+            h_idx = prog_output["health_index"]
+            h_status = "Critical" if h_idx < 40 else ("Degraded / Warning" if h_idx < 70 else "Healthy")
+            fault_code = prog_output["fault_code"]
+            fault_name = FAULT_MODES.get(fault_code, fault_code)
+            rul_hours = prog_output["estimated_rul_hours"]
+
+            # Update Fleet State with unified prognostic results
+            self.fleet_state[machine_id]["health_index"] = h_idx
+            self.fleet_state[machine_id]["health_status"] = h_status
             self.fleet_state[machine_id]["health_category"] = prog_output["health_category"]
-            self.fleet_state[machine_id]["estimated_rul_hours"] = prog_output["estimated_rul_hours"]
-            self.fleet_state[machine_id]["fault_code"] = prog_output["fault_code"]
+            self.fleet_state[machine_id]["predicted_rul_hours"] = rul_hours
+            self.fleet_state[machine_id]["estimated_rul_hours"] = rul_hours
+            self.fleet_state[machine_id]["diagnosed_fault"] = fault_name
+            self.fleet_state[machine_id]["fault_code"] = fault_code
+            self.fleet_state[machine_id]["active_fault"] = fault_name
+            self.fleet_state[machine_id]["confidence"] = diag_output.get("confidence", 90.0) / 100.0
+            self.fleet_state[machine_id]["recommendation"] = f"Action Required: Repair {fault_name}"
 
             # 4. Prescriptive Agent generates work order if priority warrants it
             work_order = self.prescriptive_agent.process(prog_output)
@@ -101,17 +119,56 @@ class FleetOrchestrator:
             }
 
         else:
-            # Healthy telemetry reading - gradually recover baseline state if normal
+            # Healthy telemetry reading
             current_health = self.fleet_state[machine_id].get("health_index", 100.0)
-            rec_health = min(100.0, current_health + 0.5)
-            self.fleet_state[machine_id]["health_index"] = round(rec_health, 1)
-            self.fleet_state[machine_id]["health_category"] = "EXCELLENT" if rec_health > 85 else "GOOD"
-            self.fleet_state[machine_id]["fault_code"] = "NORMAL"
-            self.fleet_state[machine_id]["estimated_rul_hours"] = round(min(250.0, (rec_health / 100.0) * 250.0), 1)
+            if current_health < 80.0:
+                rec_health = min(100.0, current_health + 0.5)
+                h_status = "Critical" if rec_health < 40 else ("Degraded / Warning" if rec_health < 70 else "Healthy")
+                active_fault = self.fleet_state[machine_id].get("active_fault", "DEGRADED_OPERATION")
+                rul_hours = round(max(5.0, (rec_health / 100.0) * 500.0), 1)
+
+                self.fleet_state[machine_id]["health_index"] = round(rec_health, 1)
+                self.fleet_state[machine_id]["health_status"] = h_status
+                self.fleet_state[machine_id]["predicted_rul_hours"] = rul_hours
+                self.fleet_state[machine_id]["estimated_rul_hours"] = rul_hours
+                self.fleet_state[machine_id]["diagnosed_fault"] = active_fault if rec_health < 70 else "NORMAL"
+                self.fleet_state[machine_id]["fault_code"] = active_fault if rec_health < 70 else "NORMAL"
+                self.fleet_state[machine_id]["recommendation"] = f"Ongoing Recovery / Repair {active_fault}" if rec_health < 70 else "Nominal Operation"
+            else:
+                self.fleet_state[machine_id]["health_index"] = 100.0
+                self.fleet_state[machine_id]["health_status"] = "Healthy"
+                self.fleet_state[machine_id]["health_category"] = "EXCELLENT"
+                self.fleet_state[machine_id]["predicted_rul_hours"] = 1000.0
+                self.fleet_state[machine_id]["estimated_rul_hours"] = 1000.0
+                self.fleet_state[machine_id]["diagnosed_fault"] = "NORMAL"
+                self.fleet_state[machine_id]["fault_code"] = "NORMAL"
+                self.fleet_state[machine_id]["recommendation"] = "Nominal Operation"
 
             return {
                 "status": "NORMAL",
                 "telemetry": telemetry_output
+            }
+
+    def reset_fleet(self):
+        """Resets all fleet machine states back to 100% healthy baseline."""
+        self.work_orders.clear()
+        self.alert_logs.clear()
+        for m_id, profile in MACHINE_PROFILES.items():
+            self.fleet_state[m_id] = {
+                "machine_id": m_id,
+                "machine_name": profile["name"],
+                "health_index": 100.0,
+                "health_status": "Healthy",
+                "health_category": "EXCELLENT",
+                "predicted_rul_hours": 1000.0,
+                "estimated_rul_hours": 1000.0,
+                "diagnosed_fault": "NORMAL",
+                "fault_code": "NORMAL",
+                "active_fault": "NORMAL",
+                "anomaly_score": 0.0,
+                "confidence": 1.0,
+                "recommendation": "Nominal Operation",
+                "telemetry": profile["baseline"]
             }
 
     def query_assistant(self, query: str) -> str:

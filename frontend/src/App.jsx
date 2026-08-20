@@ -7,10 +7,17 @@ import WorkOrderCenter from './components/WorkOrderCenter';
 import ChatAssistant from './components/ChatAssistant';
 import SignalXaiView from './components/SignalXaiView';
 import VisualAcousticInspector from './components/VisualAcousticInspector';
-import { LayoutDashboard, FileText, MessageSquare, Activity, Camera, Wifi } from 'lucide-react';
+import {
+  LayoutDashboard,
+  Activity,
+  Camera,
+  FileText,
+  MessageSquare,
+  Wifi
+} from 'lucide-react';
 
 export default function App() {
-  const [activeTab, setActiveTab] = useState('dashboard');
+  const [activeTab, setActiveTab] = useState('fleet-overview');
   const [userRole, setUserRole] = useState('Engineer');
   const [apiStatus, setApiStatus] = useState('connecting');
   const [config, setConfig] = useState(null);
@@ -198,11 +205,11 @@ export default function App() {
         onRoleChange={setUserRole}
       />
 
-      {/* Main Tab Navigation Bar */}
-      <nav className="tab-nav">
+      {/* Production-Grade Top Navigation Bar */}
+      <nav className="tab-nav" style={{ overflowX: 'auto', paddingBottom: '0.5rem', alignItems: 'center' }}>
         <button
-          onClick={() => setActiveTab('dashboard')}
-          className={`tab-btn ${activeTab === 'dashboard' ? 'active' : ''}`}
+          onClick={() => setActiveTab('fleet-overview')}
+          className={`tab-btn ${activeTab === 'fleet-overview' ? 'active' : ''}`}
         >
           <LayoutDashboard size={16} />
           Fleet Overview & Telemetry
@@ -221,12 +228,12 @@ export default function App() {
           className={`tab-btn ${activeTab === 'multimodal' ? 'active' : ''}`}
         >
           <Camera size={16} />
-          Visual & Acoustic Defect AI
+          Visual & Acoustic AI
         </button>
 
         <button
-          onClick={() => setActiveTab('work-orders')}
-          className={`tab-btn ${activeTab === 'work-orders' ? 'active' : ''}`}
+          onClick={() => setActiveTab('work-orders-inventory')}
+          className={`tab-btn ${activeTab === 'work-orders-inventory' ? 'active' : ''}`}
         >
           <FileText size={16} />
           CMMS Work Orders & Inventory
@@ -238,14 +245,14 @@ export default function App() {
         </button>
 
         <button
-          onClick={() => setActiveTab('chat')}
-          className={`tab-btn ${activeTab === 'chat' ? 'active' : ''}`}
+          onClick={() => setActiveTab('chat-assistant')}
+          className={`tab-btn ${activeTab === 'chat-assistant' ? 'active' : ''}`}
         >
           <MessageSquare size={16} />
-          RAG AI Maintenance Assistant
+          RAG AI Assistant
         </button>
 
-        {/* WebSocket Stream Live Toggle Button */}
+        {/* Live WebSocket Stream Toggle */}
         <button
           onClick={() => setWsStreaming(!wsStreaming)}
           style={{
@@ -260,16 +267,17 @@ export default function App() {
             cursor: 'pointer',
             display: 'flex',
             alignItems: 'center',
-            gap: '0.4rem'
+            gap: '0.4rem',
+            whiteSpace: 'nowrap'
           }}
         >
           <Wifi size={14} style={{ color: wsStreaming ? '#10b981' : '#94a3b8' }} />
-          WebSocket Stream: {wsStreaming ? 'LIVE TICKER' : 'OFF'}
+          WebSocket: {wsStreaming ? 'LIVE' : 'OFF'}
         </button>
       </nav>
 
       {/* Content Area */}
-      {activeTab === 'dashboard' && (
+      {activeTab === 'fleet-overview' && (
         <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
           <FleetOverview
             summary={fleetSummary}
@@ -303,11 +311,11 @@ export default function App() {
         <VisualAcousticInspector />
       )}
 
-      {activeTab === 'work-orders' && (
+      {activeTab === 'work-orders-inventory' && (
         <WorkOrderCenter workOrders={workOrders} />
       )}
 
-      {activeTab === 'chat' && (
+      {activeTab === 'chat-assistant' && (
         <ChatAssistant onSendMessage={handleSendMessage} isChatting={isChatting} />
       )}
     </div>

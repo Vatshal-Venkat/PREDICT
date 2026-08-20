@@ -146,20 +146,39 @@ def get_fleet_status():
     machines_list = []
     for m_id, state in fleet_state.items():
         h_idx = round(state.get("health_index", 100.0), 1)
-        fault_name = state.get("diagnosed_fault", "NORMAL")
+        
+        # Derive consistent health status category
+        if h_idx < 40.0:
+            h_status = "Critical"
+        elif h_idx < 70.0:
+            h_status = "Degraded / Warning"
+        else:
+            h_status = "Healthy"
+
+        # Derive consistent RUL hours
+        rul = state.get("predicted_rul_hours", state.get("estimated_rul_hours", 1000.0))
+        if h_idx < 80.0 and (rul >= 1000.0 or rul > h_idx * 10):
+            rul = round(max(5.0, (h_idx / 100.0) * 500.0), 1)
+
+        # Derive diagnosed fault name
+        fault_name = state.get("diagnosed_fault", state.get("fault_code", state.get("active_fault", "NORMAL")))
+        if fault_name == "NORMAL" and h_idx < 70.0:
+            fault_name = state.get("active_fault", "DEGRADED_OPERATION")
+
+        recommendation = state.get("recommendation", "Nominal Operation" if h_idx >= 70 else f"Action Required: Repair {fault_name}")
         oee_data = calculate_machine_oee(h_idx, fault_name)
 
         machines_list.append({
             "machine_id": m_id,
-            "type": state.get("type", "Unknown"),
-            "location": state.get("location", "Plant Floor"),
+            "type": state.get("type", MACHINE_PROFILES.get(m_id, {}).get("type", "Unknown")),
+            "location": state.get("location", MACHINE_PROFILES.get(m_id, {}).get("location", "Plant Floor")),
             "health_index": h_idx,
-            "health_status": state.get("health_status", "Healthy"),
-            "predicted_rul_hours": round(state.get("predicted_rul_hours", 1000.0), 1),
+            "health_status": h_status,
+            "predicted_rul_hours": round(rul, 1),
             "diagnosed_fault": fault_name,
-            "confidence": round(state.get("confidence", 1.0) * 100, 1),
-            "recommendation": state.get("recommendation", "Normal Operation"),
-            "last_telemetry": state.get("last_telemetry", {}),
+            "confidence": round(state.get("confidence", 0.95 if h_idx < 70 else 1.0) * 100, 1),
+            "recommendation": recommendation,
+            "last_telemetry": state.get("telemetry", state.get("last_telemetry", {})),
             "oee": oee_data
         })
 
@@ -217,7 +236,7 @@ def inject_telemetry(req: TelemetryInjectRequest):
         outputs.append(output)
 
         # Trigger automatic emergency webhook if critical
-        if output.get("prognostic", {}).get("health_index", 100.0) < 40.0:
+        if output.get("prognosis", {}).get("health_index", 100.0) < 40.0:
             dispatch_alert_event(
                 machine_id=req.machine_id,
                 severity="CRITICAL",
@@ -325,7 +344,6 @@ async def websocket_telemetry_stream(websocket: WebSocket):
     await ws_manager.connect(websocket)
     try:
         while True:
-            # Periodically broadcast telemetry step for selected active machine
             core.sim_step += 1
             sample_m_id = list(MACHINE_PROFILES.keys())[core.sim_step % len(MACHINE_PROFILES)]
             frame = core.generator.generate_single_reading(
