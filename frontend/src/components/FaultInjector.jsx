@@ -1,10 +1,11 @@
 import React, { useState } from 'react';
-import { Sliders, Zap, Play, CheckCircle2, AlertOctagon } from 'lucide-react';
+import { Sliders, Zap, CheckCircle2, Info } from 'lucide-react';
 
 export default function FaultInjector({ config, selectedMachineId, onInject, isInjecting }) {
   const [machineId, setMachineId] = useState(selectedMachineId || 'CNC-MILL-01');
   const [faultMode, setFaultMode] = useState('NORMAL');
   const [severity, setSeverity] = useState(0.6);
+  const [stepMode, setStepMode] = useState(1); // 1 = Single Reading, 5 = Continuous Stream
   const [lastMessage, setLastMessage] = useState('');
 
   React.useEffect(() => {
@@ -13,13 +14,13 @@ export default function FaultInjector({ config, selectedMachineId, onInject, isI
     }
   }, [selectedMachineId]);
 
-  const handleInject = async (steps = 1) => {
+  const handleExecute = async () => {
     setLastMessage('');
     const res = await onInject({
       machine_id: machineId,
       fault_mode: faultMode,
       degradation_severity: faultMode === 'NORMAL' ? 0.0 : severity,
-      steps: steps
+      steps: stepMode
     });
     if (res && res.message) {
       setLastMessage(res.message);
@@ -34,16 +35,16 @@ export default function FaultInjector({ config, selectedMachineId, onInject, isI
       <div>
         <div className="flex-between" style={{ borderBottom: '1px solid rgba(255, 255, 255, 0.08)', paddingBottom: '0.75rem', marginBottom: '1rem' }}>
           <div className="flex-gap-2">
-            <div style={{ padding: '6px', borderRadius: '6px', background: 'rgba(245, 158, 11, 0.1)', color: '#fbbf24', border: '1px solid rgba(251, 191, 36, 0.2)' }}>
+            <div style={{ padding: '6px', borderRadius: '6px', background: 'rgba(56, 189, 248, 0.1)', color: '#38bdf8', border: '1px solid rgba(56, 189, 248, 0.2)' }}>
               <Sliders size={18} />
             </div>
             <div>
               <h3 style={{ fontSize: '0.95rem', fontWeight: '700', color: '#ffffff', letterSpacing: '-0.01em' }}>Synthetic Anomaly Injector Console</h3>
-              <p style={{ fontSize: '0.7rem', color: '#64748b', margin: 0 }}>Inject degradation signals & trigger multi-agent analysis</p>
+              <p style={{ fontSize: '0.7rem', color: '#64748b', margin: 0 }}>Simulate real-world mechanical degradation signals</p>
             </div>
           </div>
           <span style={{ fontSize: '0.65rem', padding: '2px 8px', borderRadius: '4px', background: '#050811', color: '#38bdf8', border: '1px solid rgba(56, 189, 248, 0.2)', fontFamily: 'monospace' }}>
-            HW Testbench Mode
+            HW Testbench Console
           </span>
         </div>
 
@@ -69,7 +70,7 @@ export default function FaultInjector({ config, selectedMachineId, onInject, isI
           </select>
         </div>
 
-        <div className="form-group" style={{ marginBottom: '1.25rem' }}>
+        <div className="form-group" style={{ marginBottom: '1rem' }}>
           <div className="flex-between" style={{ marginBottom: '0.4rem' }}>
             <label className="form-label" style={{ margin: 0 }}>Degradation Severity Level</label>
             <span style={{ fontSize: '0.75rem', fontFamily: 'monospace', color: faultMode === 'NORMAL' ? '#34d399' : '#fbbf24', fontWeight: '700' }}>
@@ -93,14 +94,60 @@ export default function FaultInjector({ config, selectedMachineId, onInject, isI
           </div>
         </div>
 
-        <div className="grid-2" style={{ gap: '0.6rem' }}>
-          <button onClick={() => handleInject(1)} disabled={isInjecting} className="btn-primary">
-            <Zap size={14} /> Inject 1 Reading Step
-          </button>
-          <button onClick={() => handleInject(5)} disabled={isInjecting} className="btn-amber">
-            <Play size={14} /> Stream 5 Failure Steps
-          </button>
+        {/* Simplified Simulation Mode Selector */}
+        <div className="form-group" style={{ marginBottom: '1.25rem' }}>
+          <label className="form-label">Simulation Execution Mode</label>
+          <div className="grid-2" style={{ gap: '0.5rem' }}>
+            <button
+              type="button"
+              onClick={() => setStepMode(1)}
+              style={{
+                background: stepMode === 1 ? 'linear-gradient(180deg, #0284c7 0%, #0369a1 100%)' : '#050811',
+                color: '#f8fafc',
+                border: stepMode === 1 ? '1px solid rgba(56, 189, 248, 0.4)' : '1px solid rgba(255, 255, 255, 0.08)',
+                borderRadius: '6px',
+                padding: '0.55rem',
+                fontSize: '0.75rem',
+                fontWeight: 600,
+                cursor: 'pointer',
+                textAlign: 'center'
+              }}
+            >
+              ⚡ Single Step (1 Reading)
+            </button>
+            <button
+              type="button"
+              onClick={() => setStepMode(5)}
+              style={{
+                background: stepMode === 5 ? 'linear-gradient(180deg, #0284c7 0%, #0369a1 100%)' : '#050811',
+                color: '#f8fafc',
+                border: stepMode === 5 ? '1px solid rgba(56, 189, 248, 0.4)' : '1px solid rgba(255, 255, 255, 0.08)',
+                borderRadius: '6px',
+                padding: '0.55rem',
+                fontSize: '0.75rem',
+                fontWeight: 600,
+                cursor: 'pointer',
+                textAlign: 'center'
+              }}
+            >
+              📈 Stream (5 Progressive Steps)
+            </button>
+          </div>
+          <p style={{ fontSize: '0.68rem', color: '#64748b', marginTop: '5px', display: 'flex', alignItems: 'center', gap: '4px' }}>
+            <Info size={12} style={{ color: '#38bdf8', flexShrink: 0 }} />
+            {stepMode === 1 ? 'Injects 1 instantaneous telemetry packet.' : 'Streams 5 continuous time-series steps over time.'}
+          </p>
         </div>
+
+        {/* Single Prominent Main Execute Button */}
+        <button
+          onClick={handleExecute}
+          disabled={isInjecting}
+          className="btn-primary"
+          style={{ width: '100%', padding: '0.7rem', fontSize: '0.85rem', fontWeight: 700 }}
+        >
+          <Zap size={16} /> Execute Telemetry Injection
+        </button>
       </div>
 
       {lastMessage && (
