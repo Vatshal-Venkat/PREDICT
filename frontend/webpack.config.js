@@ -1,4 +1,5 @@
 const path = require('path');
+const webpack = require('webpack');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 
 module.exports = {
@@ -32,6 +33,13 @@ module.exports = {
   plugins: [
     new HtmlWebpackPlugin({
       template: './index.html',
+    }),
+    new webpack.DefinePlugin({
+      'process.env.VITE_API': JSON.stringify(process.env.VITE_API || ''),
+      'process.env.VITE_API_BASE': JSON.stringify(process.env.VITE_API_BASE || ''),
+      'process.env.VITE_API_URL': JSON.stringify(process.env.VITE_API_URL || ''),
+      'process.env.REACT_APP_API_BASE': JSON.stringify(process.env.REACT_APP_API_BASE || ''),
+      'process.env.API_BASE': JSON.stringify(process.env.API_BASE || ''),
     }),
   ],
   devServer: {

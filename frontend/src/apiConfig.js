@@ -5,8 +5,11 @@
 
 const getApiBaseUrl = () => {
   if (typeof process !== 'undefined' && process.env) {
+    if (process.env.VITE_API) return process.env.VITE_API.replace(/\/$/, '');
     if (process.env.VITE_API_BASE) return process.env.VITE_API_BASE.replace(/\/$/, '');
+    if (process.env.VITE_API_URL) return process.env.VITE_API_URL.replace(/\/$/, '');
     if (process.env.REACT_APP_API_BASE) return process.env.REACT_APP_API_BASE.replace(/\/$/, '');
+    if (process.env.REACT_APP_API_URL) return process.env.REACT_APP_API_URL.replace(/\/$/, '');
     if (process.env.API_BASE) return process.env.API_BASE.replace(/\/$/, '');
   }
   return '';

@@ -3,14 +3,13 @@
   "buildCommand": "npm run build",
   "outputDirectory": "dist",
   "framework": null,
-  "rewrites": [
+  "routes": [
     {
-      "source": "/api/:path*",
-      "destination": "https://<your-render-backend-name>.onrender.com/api/:path*"
+      "handle": "filesystem"
     },
     {
-      "source": "/ws/:path*",
-      "destination": "https://<your-render-backend-name>.onrender.com/ws/:path*"
+      "src": "/(.*)",
+      "dest": "/index.html"
     }
   ]
 }
