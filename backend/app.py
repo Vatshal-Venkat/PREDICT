@@ -125,17 +125,16 @@ def get_fleet_status():
 
 @app.get("/api/machine/{machine_id}/history")
 def get_machine_history(machine_id: str):
-    if machine_id not in core.history_logs:
-        raise HTTPException(status_code=404, detail=f"Machine {machine_id} not found")
+    target_id = machine_id if machine_id in core.history_logs else list(MACHINE_PROFILES.keys())[0]
     return {
-        "machine_id": machine_id,
-        "history": core.history_logs[machine_id]
+        "machine_id": target_id,
+        "history": core.history_logs.get(target_id, [])
     }
 
 @app.post("/api/telemetry/inject")
 def inject_telemetry(req: TelemetryInjectRequest):
     if req.machine_id not in MACHINE_PROFILES:
-        raise HTTPException(status_code=400, detail=f"Invalid machine_id: {req.machine_id}")
+        req.machine_id = list(MACHINE_PROFILES.keys())[0]
     if req.fault_mode not in FAULT_MODES:
         raise HTTPException(status_code=400, detail=f"Invalid fault_mode: {req.fault_mode}")
 
@@ -168,22 +167,9 @@ def get_work_orders():
 
 @app.post("/api/chat")
 def chat_with_assistant(req: ChatRequest):
-    fleet_state = core.orchestrator.fleet_state
-    work_orders = core.orchestrator.work_orders
-    
-    # Delegate to LLMAssistantAgent inside orchestrator
-    llm_agent = core.orchestrator.agents.get("llm_assistant")
-    if llm_agent:
-        response = llm_agent.answer_query(
-            user_query=req.message,
-            fleet_state=fleet_state,
-            work_orders=work_orders
-        )
-    else:
-        response = "I am ready to assist with your plant maintenance needs!"
-
+    response_text = core.orchestrator.query_assistant(req.message)
     return {
-        "response": response
+        "response": response_text
     }
 
 @app.post("/api/reset")
