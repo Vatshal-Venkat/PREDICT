@@ -1,26 +1,27 @@
 """
-Operational Maintenance Chat Assistant Agent.
-Provides natural language querying, diagnostic summary generation, and interactive plant fleet guidance.
+Operational Maintenance Chat Assistant Agent with RAG Manual Retrieval Integration.
+Provides natural language querying, diagnostic summaries, and OEM technical manual citations.
 """
 
 from typing import Dict, Any, List
 from agents.base import BaseAgent
+from agents.rag_engine import search_oem_manuals
 from config import MACHINE_PROFILES, FAULT_MODES
 
 
 class LLMAssistantAgent(BaseAgent):
-    """Natural language operational assistant for maintenance engineers and plant managers."""
+    """Natural language operational assistant with RAG manual citations."""
 
     def __init__(self):
         super().__init__(
             agent_id="llm_assistant",
-            name="Plant Maintenance Operational Assistant",
-            role="Answers natural language queries about machine health, active maintenance tickets, risk schedules, and diagnostics."
+            name="Plant Maintenance Operational Assistant (RAG-Enabled)",
+            role="Answers queries about machine health, active tickets, and retrieves technical OEM manual citations."
         )
 
     def process(self, query_payload: Dict[str, Any]) -> Dict[str, Any]:
         """
-        Processes a natural language query using fleet state context.
+        Processes a natural language query using fleet state context and RAG engine.
         """
         user_query = query_payload.get("query", "").strip()
         fleet_state = query_payload.get("fleet_state", {})
@@ -40,10 +41,20 @@ class LLMAssistantAgent(BaseAgent):
         fleet_state: Dict[str, Any],
         work_orders: List[Dict[str, Any]]
     ) -> str:
-        """Parses intent and constructs structured, informative response."""
+        """Parses intent, retrieves RAG manual references, and constructs structured response."""
         q_lower = query.lower()
 
-        # 1. Summary of overall fleet health
+        # 1. RAG Manual / Repair Procedure queries
+        if any(w in q_lower for w in ["manual", "sop", "torque", "procedure", "how to", "replace", "fix", "repair", "spec"]):
+            manuals = search_oem_manuals(query, limit=2)
+            lines = ["### 📚 OEM Technical Manual & SOP Citations (RAG Engine Retrieval)\n"]
+            for doc in manuals:
+                lines.append(f"**📖 [{doc['doc_id']}] {doc['title']}**")
+                lines.append(f"*Reference:* `{doc['manual_ref']}`")
+                lines.append(f"> {doc['content']}\n")
+            return "\n".join(lines)
+
+        # 2. Summary of overall fleet health
         if any(w in q_lower for w in ["fleet", "overview", "summary", "status", "all machines"]):
             if not fleet_state:
                 return "The fleet monitor is currently initializing. All machine telemetry systems are coming online."
@@ -72,11 +83,13 @@ class LLMAssistantAgent(BaseAgent):
 
             return "\n".join(lines)
 
-        # 2. Specific machine query
+        # 3. Specific machine query
         for m_id, info in fleet_state.items():
             m_name = info.get("machine_name", m_id).lower()
             if m_id.lower() in q_lower or m_name in q_lower or m_id.replace("-", "").lower() in q_lower:
                 fault_name = FAULT_MODES.get(info.get("fault_code"), info.get("fault_code"))
+                manual_matches = search_oem_manuals(fault_name, limit=1)
+                citation = f"\n\n**OEM Manual Citation:** `{manual_matches[0]['manual_ref']}` - {manual_matches[0]['title']}" if manual_matches else ""
                 return (
                     f"### Operational Status for {info.get('machine_name', m_id)}\n"
                     f"- Health Index: '{info.get('health_index', 100)}%' ({info.get('health_category', 'NORMAL')})\n"
@@ -84,10 +97,10 @@ class LLMAssistantAgent(BaseAgent):
                     f"- Active Diagnostic Status: {fault_name}\n"
                     f"- Latest Anomaly Score: '{info.get('anomaly_score', 0.0)}' (Threshold: 0.45)\n"
                     f"- Key Telemetry: Vibration RMS: '{info.get('telemetry', {}).get('vibration_rms')} mm/s', Temp: '{info.get('telemetry', {}).get('temperature')} deg C', Pressure: '{info.get('telemetry', {}).get('pressure')} bar'\n"
-                    f"- Recommended Action: Refer to generated work orders for step-by-step procedures."
+                    f"- Recommended Action: Refer to generated work orders for step-by-step procedures.{citation}"
                 )
 
-        # 3. Work Orders query
+        # 4. Work Orders query
         if any(w in q_lower for w in ["work order", "ticket", "task", "repair", "maintenance plan"]):
             if not work_orders:
                 return "No active maintenance work orders have been dispatched. All machinery is healthy or awaiting anomaly detection events."
@@ -103,11 +116,14 @@ class LLMAssistantAgent(BaseAgent):
                 )
             return "\n".join(lines)
 
-        # 4. Fallback helpful response
+        # 5. Fallback response with RAG citation suggestion
+        manual_matches = search_oem_manuals(query, limit=1)
+        rag_hint = f"\n\n**Relevant OEM Procedure:**\n> `{manual_matches[0]['manual_ref']}`: {manual_matches[0]['content']}" if manual_matches else ""
+
         return (
             "I am your AI Predictive Maintenance Operational Assistant. You can ask me:\n"
             "- 'What is the overall fleet status?'\n"
-            "- 'Show me status for CNC Machine #1 or Hydraulic Pump #2'\n"
-            "- 'What work orders are active?'\n"
-            "- 'Which machines are at risk of failure in the next 24 hours?'"
+            "- 'Show OEM torque specs for SKF 6205 bearing replacement'\n"
+            "- 'How do I fix hydraulic cavitation?'\n"
+            "- 'Show status for CNC-MILL-01'" + rag_hint
         )
