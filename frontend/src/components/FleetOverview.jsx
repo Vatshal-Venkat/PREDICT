@@ -20,13 +20,18 @@ export default function FleetOverview({ summary, machines, selectedMachineId, on
     <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
       {/* Executive 6-Column KPI Grid */}
       <div className="grid-6">
-        <div className="kpi-card">
+        <div className="kpi-card" style={{ position: 'relative' }}>
           <div className="icon-box" style={{ background: 'rgba(56, 189, 248, 0.1)', color: '#38bdf8', border: '1px solid rgba(56, 189, 248, 0.2)' }}>
             <Cpu size={20} />
           </div>
           <div>
-            <div className="kpi-val">{summary.total_machines || 0}</div>
-            <div className="kpi-lbl">Monitored Assets</div>
+            <div className="kpi-val" style={{ display: 'flex', alignItems: 'baseline', gap: '0.3rem' }}>
+              {summary.total_machines || 0}
+              <span style={{ fontSize: '0.68rem', color: '#38bdf8', fontWeight: 600, background: 'rgba(56, 189, 248, 0.15)', padding: '1px 6px', borderRadius: '4px', border: '1px solid rgba(56, 189, 248, 0.3)' }}>
+                10k AI4I Logs
+              </span>
+            </div>
+            <div className="kpi-lbl">Live Monitored Assets</div>
           </div>
         </div>
 

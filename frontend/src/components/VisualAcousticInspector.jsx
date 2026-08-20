@@ -218,7 +218,7 @@ export default function VisualAcousticInspector() {
                           }}
                         >
                           <span style={{ position: 'absolute', top: '-18px', left: 0, background: '#ef4444', color: 'white', fontSize: '0.6rem', padding: '1px 4px', fontWeight: 700, borderRadius: '2px', whiteSpace: 'nowrap' }}>
-                            Porosity Defect 96%
+                            Defect {(inspectionResult.defect_details.confidence * 100).toFixed(0)}% [X:{inspectionResult.defect_details.bounding_box.x}, Y:{inspectionResult.defect_details.bounding_box.y}]
                           </span>
                         </div>
                       )}
