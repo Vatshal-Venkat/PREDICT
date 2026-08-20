@@ -64,6 +64,15 @@ class TestEnterpriseFeatures(unittest.TestCase):
         resp = agent.process({"query": "Show OEM torque specs for SKF 6205 bearing replacement"})
         self.assertIn("RAG Engine Retrieval", resp["response"])
 
+        risk_resp = agent.process({
+            "query": "Which machine has the highest fault risk?",
+            "fleet_state": {
+                "CNC-MILL-01": {"health_index": 100.0, "estimated_rul_hours": 1000, "fault_code": "NORMAL"},
+                "HYD-PUMP-02": {"health_index": 35.0, "estimated_rul_hours": 48, "fault_code": "HYDRAULIC_LEAK"}
+            }
+        })
+        self.assertIn("Highest Fault Risk Equipment", risk_resp["response"])
+
     def test_auth_rbac(self):
         token = create_mock_jwt_token("eng_user", "Engineer")
         self.assertIn("Engineer", token)

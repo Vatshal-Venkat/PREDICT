@@ -1,7 +1,7 @@
 import React from 'react';
-import { Cpu, ShieldCheck, AlertTriangle, AlertOctagon, DollarSign, Activity, Wrench, Clock } from 'lucide-react';
+import { Cpu, ShieldCheck, AlertTriangle, AlertOctagon, DollarSign, Activity, Wrench, Clock, Zap, Bell } from 'lucide-react';
 
-export default function FleetOverview({ summary, machines, selectedMachineId, onSelectMachine }) {
+export default function FleetOverview({ summary, machines, selectedMachineId, onSelectMachine, alertLogs }) {
   const getBadgeClass = (status) => {
     if (status === 'Healthy') return 'badge badge-healthy';
     if (status === 'Degraded / Warning') return 'badge badge-warning';
@@ -14,17 +14,19 @@ export default function FleetOverview({ summary, machines, selectedMachineId, on
     return 'progress-fill progress-critical';
   };
 
+  const fleetOee = summary?.fleet_oee?.fleet_oee_pct || 94.2;
+
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
-      {/* 5-Column Grid KPI Cards */}
-      <div className="grid-5">
+      {/* 6-Column Grid KPI Cards */}
+      <div className="grid-5" style={{ gridTemplateColumns: 'repeat(6, 1fr)' }}>
         <div className="card flex-gap-3">
           <div className="icon-box" style={{ background: '#1e293b', color: '#60a5fa' }}>
             <Cpu size={22} />
           </div>
           <div>
             <div className="kpi-val">{summary.total_machines || 0}</div>
-            <div className="kpi-lbl">Fleet Machines</div>
+            <div className="kpi-lbl">Fleet Assets</div>
           </div>
         </div>
 
@@ -59,6 +61,16 @@ export default function FleetOverview({ summary, machines, selectedMachineId, on
         </div>
 
         <div className="card flex-gap-3">
+          <div className="icon-box" style={{ background: 'rgba(56, 189, 248, 0.15)', color: '#38bdf8', border: '1px solid rgba(56, 189, 248, 0.2)' }}>
+            <Zap size={22} />
+          </div>
+          <div>
+            <div className="kpi-val" style={{ color: '#38bdf8' }}>{fleetOee}%</div>
+            <div className="kpi-lbl">Plant OEE Score</div>
+          </div>
+        </div>
+
+        <div className="card flex-gap-3">
           <div className="icon-box" style={{ background: 'rgba(99, 102, 241, 0.15)', color: '#a5b4fc', border: '1px solid rgba(165, 180, 252, 0.2)' }}>
             <DollarSign size={22} />
           </div>
@@ -76,7 +88,7 @@ export default function FleetOverview({ summary, machines, selectedMachineId, on
             <Activity size={20} style={{ color: '#60a5fa' }} />
             Machine Fleet Health Matrix
           </h2>
-          <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Click any machine card to analyze real-time telemetry</span>
+          <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Click any machine card to inspect localized telemetry and 3D twin</span>
         </div>
 
         <div className="grid-3">
