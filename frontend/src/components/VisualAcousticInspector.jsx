@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Camera, Volume2, Search, CheckCircle, AlertTriangle, Image as ImageIcon } from 'lucide-react';
+import { API_BASE } from '../apiConfig';
 
 export default function VisualAcousticInspector() {
   const [activeMode, setActiveMode] = useState('visual'); // 'visual' or 'acoustic'
@@ -9,7 +10,7 @@ export default function VisualAcousticInspector() {
   const [isScanning, setIsScanning] = useState(false);
 
   useEffect(() => {
-    fetch('/api/casting/images')
+    fetch(`${API_BASE}/api/casting/images`)
       .then((res) => res.json())
       .then((data) => {
         if (data && data.images && data.images.length > 0) {
@@ -23,7 +24,7 @@ export default function VisualAcousticInspector() {
   const runInspection = async () => {
     setIsScanning(true);
     try {
-      const res = await fetch('/api/multimodal/inspect', {
+      const res = await fetch(`${API_BASE}/api/multimodal/inspect`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ inspection_type: activeMode, sample_id: sampleId })
@@ -154,7 +155,7 @@ export default function VisualAcousticInspector() {
             <div style={{ marginTop: '1rem', background: '#080d1a', padding: '0.5rem', borderRadius: '6px', border: '1px solid rgba(255, 255, 255, 0.08)', textAlign: 'center' }}>
               <div style={{ fontSize: '0.7rem', color: '#94a3b8', marginBottom: '4px' }}>Casting Dataset Source Image</div>
               <img
-                src={`/api/casting/image/${sampleId}`}
+                src={`${API_BASE}/api/casting/image/${sampleId}`}
                 alt="Casting sample"
                 style={{ maxWidth: '100%', maxHeight: '180px', borderRadius: '4px', border: '1px solid rgba(255, 255, 255, 0.15)', objectFit: 'contain' }}
               />

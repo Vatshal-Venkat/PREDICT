@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { FileText, CheckCircle2, Clock, Wrench, DollarSign, UserCheck, Package, Share2, ShoppingCart } from 'lucide-react';
+import { API_BASE } from '../apiConfig';
 
 export default function WorkOrderCenter({ workOrders }) {
   const [activeSubTab, setActiveSubTab] = useState('tickets'); // 'tickets' or 'inventory'
@@ -9,7 +10,7 @@ export default function WorkOrderCenter({ workOrders }) {
 
   const fetchInventory = async () => {
     try {
-      const res = await fetch('/api/inventory');
+      const res = await fetch(`${API_BASE}/api/inventory`);
       if (res.ok) {
         const json = await res.json();
         setInventory(json.inventory || []);
@@ -25,7 +26,7 @@ export default function WorkOrderCenter({ workOrders }) {
 
   const handleExportCmms = async (woId) => {
     try {
-      const res = await fetch(`/api/cmms/export/${woId}`);
+      const res = await fetch(`${API_BASE}/api/cmms/export/${woId}`);
       if (res.ok) {
         const json = await res.json();
         setExportedCmms(json);
@@ -38,7 +39,7 @@ export default function WorkOrderCenter({ workOrders }) {
   const handleRequisition = async (partNum) => {
     setLoadingRequisition(true);
     try {
-      const res = await fetch('/api/inventory/requisition', {
+      const res = await fetch(`${API_BASE}/api/inventory/requisition`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ part_number: partNum, quantity: 10 })

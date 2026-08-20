@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Activity, BarChart2, Zap } from 'lucide-react';
 import { ResponsiveContainer, AreaChart, Area, XAxis, YAxis, Tooltip, CartesianGrid } from 'recharts';
+import { API_BASE } from '../apiConfig';
 
 export default function SignalXaiView({ selectedMachineId }) {
   const [data, setData] = useState(null);
@@ -9,7 +10,7 @@ export default function SignalXaiView({ selectedMachineId }) {
   const fetchSignalXai = async (mId) => {
     setLoading(true);
     try {
-      const res = await fetch(`/api/signal/xai/${mId}`);
+      const res = await fetch(`${API_BASE}/api/signal/xai/${mId}`);
       if (res.ok) {
         const json = await res.json();
         setData(json);

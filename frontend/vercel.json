@@ -1,0 +1,16 @@
+{
+  "version": 2,
+  "buildCommand": "npm run build",
+  "outputDirectory": "dist",
+  "framework": null,
+  "rewrites": [
+    {
+      "source": "/api/:path*",
+      "destination": "https://<your-render-backend-name>.onrender.com/api/:path*"
+    },
+    {
+      "source": "/ws/:path*",
+      "destination": "https://<your-render-backend-name>.onrender.com/ws/:path*"
+    }
+  ]
+}

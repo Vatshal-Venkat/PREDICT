@@ -16,6 +16,8 @@ import {
   Wifi
 } from 'lucide-react';
 
+import { API_BASE, getWsUrl } from './apiConfig';
+
 export default function App() {
   const [activeTab, setActiveTab] = useState('fleet-overview');
   const [userRole, setUserRole] = useState('Engineer');
@@ -30,8 +32,6 @@ export default function App() {
   const [isResetting, setIsResetting] = useState(false);
   const [isChatting, setIsChatting] = useState(false);
   const [wsStreaming, setWsStreaming] = useState(false);
-
-  const API_BASE = '';
 
   const fetchFleetData = async () => {
     try {
@@ -106,8 +106,7 @@ export default function App() {
   useEffect(() => {
     if (!wsStreaming) return;
 
-    const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-    const wsUrl = `${protocol}//${window.location.host}/ws/telemetry`;
+    const wsUrl = getWsUrl();
     const ws = new WebSocket(wsUrl);
 
     ws.onmessage = (event) => {
