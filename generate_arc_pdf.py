@@ -109,7 +109,7 @@ def build_pdf(filename):
         ("2. Diagnostic Agent", "Fault Classify", colors.HexColor('#f59e0b')),
         ("3. Prognostic Agent", "RUL Forecast", colors.HexColor('#818cf8')),
         ("4. Prescriptive Agent", "CMMS & Alert", colors.HexColor('#10b981')),
-        ("5. RAG Copilot", "OEM Manuals", colors.HexColor('#06b6d4')),
+        ("5. Copilot", "OEM Manuals", colors.HexColor('#06b6d4')),
     ]
 
     x_offset = 10
@@ -217,7 +217,7 @@ def build_pdf(filename):
             Paragraph("Detects surface metal spalling, fluid leaks, and pump cavitation noise.", body_style)
         ],
         [
-            Paragraph("<b>RAG OEM Knowledge Base</b>", body_style),
+            Paragraph("<b>OEM Knowledge Base</b>", body_style),
             Paragraph("Vector Index (FAISS / Cosine Similarity) over OEM technical manuals (SKF, Siemens, Parker).", body_style),
             Paragraph("Technicians receive instant torque specs (e.g. 45 Nm) and step-by-step SOP guides.", body_style)
         ]
@@ -242,7 +242,7 @@ def build_pdf(filename):
     story.append(Paragraph("• <b>Tab 2: FFT Signal & SHAP XAI</b> — Inspect vibration frequency power spectra (0-500 Hz) and view SHAP anomaly risk attributions.", bullet_style))
     story.append(Paragraph("• <b>Tab 3: Visual & Acoustic AI</b> — Run computer vision optical part defect scans and microphone audio spectrogram noise checks.", bullet_style))
     story.append(Paragraph("• <b>Tab 4: CMMS Work Orders & Inventory</b> — Review prescriptive repair tickets, track warehouse spare parts stock, and export SAP PM / IBM Maximo JSON schemas.", bullet_style))
-    story.append(Paragraph("• <b>Tab 5: RAG AI Assistant</b> — Ask natural language operational queries and retrieve OEM manual citations with exact page numbers and torque specs.", bullet_style))
+    story.append(Paragraph("• <b>Tab 5: Assistant</b> — Ask natural language operational queries and retrieve OEM manual citations with exact page numbers and torque specs.", bullet_style))
 
     doc.build(story)
     print(f"Successfully generated {filename}")
